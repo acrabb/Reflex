@@ -9,9 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreBluetooth/CoreBluetooth.h>
 
-@interface LQRModel : NSObject <CBCentralManagerDelegate>
-
-@property (strong, nonatomic) CBCentralManager  *myManager;
+@interface LQRModel : NSObject
 
 + (id)sharedInstance;
 
