@@ -23,10 +23,15 @@ const NSInteger OFF_TAG         = 0;
 const NSInteger ON_TAG          = 1;
 const NSInteger CONNECTED_TAG   = 2;
 
+
+
 @synthesize myModel     = _myModel;
 @synthesize myManager   = _myManager;
 @synthesize statusLabel = _statusLabel;
 @synthesize multiButton = _multiButton;
+@synthesize periph      = _periph;
+
+
 
 
 - (void)viewDidLoad
@@ -76,25 +81,60 @@ const NSInteger CONNECTED_TAG   = 2;
 //-------------------------------------------------------------------------
 - (void)connect
 {
-    CBUUID *hr = [CBUUID UUIDWithString:@"180D"];
     NSDictionary *scanOptions = [NSDictionary dictionaryWithObject:[NSNumber numberWithBool:NO]
                                                             forKey:CBCentralManagerScanOptionAllowDuplicatesKey];
     NSLog(@">> Scanning for peripherals...");
-//    [self.myManager scanForPeripheralsWithServices:[NSArray arrayWithObject:hr]
-     [self.myManager scanForPeripheralsWithServices:nil
-                                           options:scanOptions];
-    
+    [self.myManager scanForPeripheralsWithServices:[NSArray arrayWithObject:self.myModel.uuidService] options:scanOptions];
 }
 
 
-#pragma mark Central Manager
+
+#pragma mark Peripheral Delegate
+- (void)peripheral:(CBPeripheral *)peripheral didDiscoverServices:(NSError *)error
+{
+    NSLog(@"PER> Discovered services...");
+    for (CBService *service in peripheral.services) {
+        if ([service.UUID isEqual:self.myModel.uuidService]) {
+            NSLog(@"PER>> Discovered service: %@, with uuid: %@", service, service.UUID);
+            [peripheral discoverCharacteristics:nil forService:service];
+        }
+    }
+}
+- (void)peripheral:(CBPeripheral *)peripheral didDiscoverCharacteristicsForService:(CBService *)service error:(NSError *)error
+{
+    for (CBCharacteristic *characteristic in service.characteristics) {
+        NSLog(@"PER>>> Discovered characteristic: %@", characteristic.UUID);
+        if ([self.myModel.uuidCharacteristic isEqual:characteristic.UUID]) {
+            // Read the value!!
+            [self.periph setNotifyValue:YES forCharacteristic:characteristic];
+        }
+
+    }
+}
+
+- (void)peripheral:(CBPeripheral *)peripheral didUpdateNotificationStateForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error
+{
+    if (error) {
+        NSLog(@"Error changing notification state: %@",
+              [error localizedDescription]);
+    }
+    NSLog(@"PER>>>> Got char value: %s", characteristic.value.bytes);
+//    characteristic.value;
+}
+
+
+#pragma mark Central Manager Delegate
 //-------------------------------------------------------------------------
 - (void)centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral
      advertisementData:(NSDictionary *)advertisementData
                   RSSI:(NSNumber *)RSSI {
     NSLog(@"LQR> Advertisement...:%@",[advertisementData description]);
     NSLog(@">>> >> ...for peripheral:%@\n", peripheral);
-    //[self.myManager retrievePeripheralsWithIdentifiers:(id)peripheral.identifier];
+    if ([@"Reflex Demo!" isEqualToString:peripheral.name]) {
+        self.periph = peripheral;
+        [self.myManager connectPeripheral:self.periph options:nil];
+        [self.myManager stopScan];
+    }
 }
 //-------------------------------------------------------------------------
 - (void) centralManager:(CBCentralManager *)central didFailToConnectPeripheral:(CBPeripheral *)peripheral error:(NSError *)error
@@ -105,6 +145,10 @@ const NSInteger CONNECTED_TAG   = 2;
 - (void) centralManager:(CBCentralManager *)central didConnectPeripheral:(CBPeripheral *)peripheral
 {
     NSLog(@"LQR> Did connect peripheral: %@", [peripheral description]);
+    self.periph = peripheral;
+    self.periph.delegate = self;
+    [self.periph discoverServices:[NSArray arrayWithObject:self.myModel.uuidService]];
+//    [self.periph readValueForCharacteristic:[]];
 }
 //-------------------------------------------------------------------------
 -(void)centralManager:(CBCentralManager *)central didRetrievePeripherals:(NSArray *)peripherals{

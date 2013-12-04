@@ -10,13 +10,14 @@
 #import <CoreBluetooth/CoreBluetooth.h>
 #import "LQRModel.h"
 
-@interface ViewController : UIViewController <CBCentralManagerDelegate>
+@interface ViewController : UIViewController <CBCentralManagerDelegate, CBPeripheralDelegate>
 
 @property (strong, nonatomic) CBCentralManager  *myManager;
 
 @property (strong, nonatomic) LQRModel          *myModel;
 @property (weak, nonatomic) IBOutlet UIButton   *multiButton;
 @property (weak, nonatomic) IBOutlet UILabel    *statusLabel;
+@property (strong, nonatomic) CBPeripheral      *periph;
 
 
 

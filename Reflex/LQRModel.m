@@ -10,6 +10,10 @@
 
 @implementation LQRModel
 
+@synthesize uuidDevice          = _uuidDevice;
+@synthesize uuidService         = _uuidService;
+@synthesize uuidCharacteristic  = _uuidCharacteristic;
+
 
 + (id)sharedInstance {
     static LQRModel *sharedInstance = nil;
@@ -22,6 +26,10 @@
 
 - (id)init {
     if (self = [super init]) {
+        self.uuidDevice = [CBUUID UUIDWithString:@""];
+        self.uuidService = [CBUUID UUIDWithString:@"e14235c0-5d26-11e3-949a-0800200c9a66"];
+        self.uuidCharacteristic = [CBUUID UUIDWithString:@"e14235c1-5d26-11e3-949a-0800200c9a66"];
+        
         
     }
     return self;

@@ -13,4 +13,8 @@
 
 + (id)sharedInstance;
 
+@property (strong, nonatomic) CBUUID *uuidDevice;
+@property (strong, nonatomic) CBUUID *uuidService;
+@property (strong, nonatomic) CBUUID *uuidCharacteristic;
+
 @end
