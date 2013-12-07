@@ -19,6 +19,10 @@
 @property (weak, nonatomic) IBOutlet UILabel    *statusLabel;
 @property (strong, nonatomic) CBPeripheral      *periph;
 
+@property (weak, nonatomic) IBOutlet UILabel *hammerStrengthLabel;
+@property (weak, nonatomic) IBOutlet UILabel *reflexLatLabel;
+@property (weak, nonatomic) IBOutlet UILabel *reflexStrLabel;
+
 
 
 @end

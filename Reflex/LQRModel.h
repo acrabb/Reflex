@@ -17,4 +17,9 @@
 @property (strong, nonatomic) CBUUID *uuidService;
 @property (strong, nonatomic) CBUUID *uuidCharacteristic;
 
+@property (strong, nonatomic) NSMutableDictionary *history;
+
+
+-(NSArray *)getHistoryValues;
+
 @end

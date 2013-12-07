@@ -31,6 +31,10 @@ const NSInteger CONNECTED_TAG   = 2;
 @synthesize multiButton = _multiButton;
 @synthesize periph      = _periph;
 
+@synthesize hammerStrengthLabel = _hammerStrengthLabel;
+@synthesize reflexLatLabel  = _reflexLatLabel;
+@synthesize reflexStrLabel  = _reflexStrLabel;
+
 
 
 
@@ -60,6 +64,7 @@ const NSInteger CONNECTED_TAG   = 2;
     }
 }
 
+
 //-------------------------------------------------------------------------
 - (void)blueToothOff
 {
@@ -84,7 +89,9 @@ const NSInteger CONNECTED_TAG   = 2;
     NSDictionary *scanOptions = [NSDictionary dictionaryWithObject:[NSNumber numberWithBool:NO]
                                                             forKey:CBCentralManagerScanOptionAllowDuplicatesKey];
     NSLog(@">> Scanning for peripherals...");
-    [self.myManager scanForPeripheralsWithServices:[NSArray arrayWithObject:self.myModel.uuidService] options:scanOptions];
+    //TODO CHANGE ME TO SPECIFIC SERVICE
+//    [self.myManager scanForPeripheralsWithServices:[NSArray arrayWithObject:self.myModel.uuidService] options:scanOptions];
+    [self.myManager scanForPeripheralsWithServices:nil options:scanOptions];
 }
 
 
@@ -103,10 +110,13 @@ const NSInteger CONNECTED_TAG   = 2;
 - (void)peripheral:(CBPeripheral *)peripheral didDiscoverCharacteristicsForService:(CBService *)service error:(NSError *)error
 {
     for (CBCharacteristic *characteristic in service.characteristics) {
-        NSLog(@"PER>>> Discovered characteristic: %@", characteristic.UUID);
+       [self.periph setNotifyValue:YES forCharacteristic:characteristic];
+        NSLog(@"PER>>>> Read char value: %s", characteristic.value.bytes);
+        // ONLY FOR SPECIFIC CHAR
         if ([self.myModel.uuidCharacteristic isEqual:characteristic.UUID]) {
             // Read the value!!
             [self.periph setNotifyValue:YES forCharacteristic:characteristic];
+            NSLog(@"PER>>>> Read char value: %s", characteristic.value.bytes);
         }
 
     }
@@ -118,8 +128,26 @@ const NSInteger CONNECTED_TAG   = 2;
         NSLog(@"Error changing notification state: %@",
               [error localizedDescription]);
     }
-    NSLog(@"PER>>>> Got char value: %s", characteristic.value.bytes);
-//    characteristic.value;
+}
+//-------------------------------------------------------------------------
+- (void)peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error
+{
+    NSData * data = characteristic.value;
+    NSLog(@"PER>>>> Updated char value: %@", [characteristic.value description]);
+    
+    NSRange range = NSMakeRange (0, 6);
+    unsigned char aBuffer[6];
+    [data getBytes:aBuffer range:range];
+    int ham1 = aBuffer[0];
+    int ham2 = aBuffer[1];
+    int ham3 = aBuffer[2];
+    
+    self.hammerStrengthLabel.text = [NSString stringWithFormat:@"%d", ham1];
+    self.reflexLatLabel.text = [NSString stringWithFormat:@"%d", ham2];
+    self.reflexStrLabel.text = [NSString stringWithFormat:@"%d", ham3];
+    
+//    NSString *s = [[NSString alloc] initWithBytes:aBuffer length:6 encoding:NSUTF8StringEncoding];
+//    NSLog(@"PER>>>> Updated char value: %@", s);
 }
 
 
@@ -130,7 +158,7 @@ const NSInteger CONNECTED_TAG   = 2;
                   RSSI:(NSNumber *)RSSI {
     NSLog(@"LQR> Advertisement...:%@",[advertisementData description]);
     NSLog(@">>> >> ...for peripheral:%@\n", peripheral);
-    if ([@"Reflex Demo!" isEqualToString:peripheral.name]) {
+    if ([@"Reflex X1" isEqualToString:peripheral.name]) {
         self.periph = peripheral;
         [self.myManager connectPeripheral:self.periph options:nil];
         [self.myManager stopScan];
@@ -147,7 +175,10 @@ const NSInteger CONNECTED_TAG   = 2;
     NSLog(@"LQR> Did connect peripheral: %@", [peripheral description]);
     self.periph = peripheral;
     self.periph.delegate = self;
-    [self.periph discoverServices:[NSArray arrayWithObject:self.myModel.uuidService]];
+    [self.periph discoverServices:nil];
+    // TODO CHANGE ME TO SPECIFIC SERVICE
+//    [self.periph discoverServices:[NSArray arrayWithObject:self.myModel.uuidService]];
+    
 //    [self.periph readValueForCharacteristic:[]];
 }
 //-------------------------------------------------------------------------

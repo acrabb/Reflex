@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		65227AB418528FAC0012B980 /* InfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 65227AB318528FAC0012B980 /* InfoViewController.m */; };
 		65F49E03184A501F007D8E8F /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 65F49E02184A501F007D8E8F /* Foundation.framework */; };
 		65F49E05184A501F007D8E8F /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 65F49E04184A501F007D8E8F /* CoreGraphics.framework */; };
 		65F49E07184A501F007D8E8F /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 65F49E06184A501F007D8E8F /* UIKit.framework */; };
@@ -37,6 +38,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		65227AB218528FAC0012B980 /* InfoViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InfoViewController.h; sourceTree = "<group>"; };
+		65227AB318528FAC0012B980 /* InfoViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = InfoViewController.m; sourceTree = "<group>"; };
 		65F49DFF184A501F007D8E8F /* Reflex.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Reflex.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		65F49E02184A501F007D8E8F /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		65F49E04184A501F007D8E8F /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -127,6 +130,8 @@
 				65F49E17184A501F007D8E8F /* Main_iPad.storyboard */,
 				65F49E1A184A501F007D8E8F /* ViewController.h */,
 				65F49E1B184A501F007D8E8F /* ViewController.m */,
+				65227AB218528FAC0012B980 /* InfoViewController.h */,
+				65227AB318528FAC0012B980 /* InfoViewController.m */,
 				65F49E3C184A5524007D8E8F /* LQRModel.h */,
 				65F49E3D184A5524007D8E8F /* LQRModel.m */,
 				65F49E1D184A501F007D8E8F /* Images.xcassets */,
@@ -265,6 +270,7 @@
 				65F49E1C184A501F007D8E8F /* ViewController.m in Sources */,
 				65F49E3E184A5524007D8E8F /* LQRModel.m in Sources */,
 				65F49E13184A501F007D8E8F /* AppDelegate.m in Sources */,
+				65227AB418528FAC0012B980 /* InfoViewController.m in Sources */,
 				65F49E0F184A501F007D8E8F /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
