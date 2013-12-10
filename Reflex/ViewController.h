@@ -9,6 +9,7 @@
 #import <UIKit/UIKit.h>
 #import <CoreBluetooth/CoreBluetooth.h>
 #import "LQRModel.h"
+#import "DataModel.h"
 
 @interface ViewController : UIViewController <CBCentralManagerDelegate, CBPeripheralDelegate>
 

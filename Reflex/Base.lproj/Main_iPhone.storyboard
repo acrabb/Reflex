@@ -97,7 +97,6 @@
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
                                 <connections>
-                                    <action selector="historyButtonTapped:" destination="vXZ-lx-hvc" eventType="touchUpInside" id="8aa-5d-f8q"/>
                                     <segue destination="8R8-in-LFC" kind="modal" modalTransitionStyle="flipHorizontal" id="qlT-9y-Gky"/>
                                 </connections>
                             </button>

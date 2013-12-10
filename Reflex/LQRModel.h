@@ -8,17 +8,17 @@
 
 #import <Foundation/Foundation.h>
 #import <CoreBluetooth/CoreBluetooth.h>
+#import "DataModel.h"
 
 @interface LQRModel : NSObject
 
 + (id)sharedInstance;
 
-@property (strong, nonatomic) CBUUID *uuidDevice;
+@property (strong, nonatomic) NSUUID *uuidDevice;
 @property (strong, nonatomic) CBUUID *uuidService;
 @property (strong, nonatomic) CBUUID *uuidCharacteristic;
 
 @property (strong, nonatomic) NSMutableDictionary *history;
-
 
 -(NSArray *)getHistoryValues;
 

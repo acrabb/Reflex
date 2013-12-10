@@ -14,16 +14,31 @@
 
 @implementation ViewController
 
-NSString *OFF_LABEL         = @"Turn BT On";
-NSString *ON_LABEL          = @"Connect";
-NSString *CONNECTED_LABEL   = @"Start Test";
-NSString *CONNECTING_LABEL  = @"Connecting...";
+
+/* TODO
+ Add searching view and timeout.
+ Add data received to model storage.
+ View model data in history view.
+ Add graph to history view.
+ */
+
+
+
+NSString *OFF_LABEL         = @"Enable Bluetooth";
+NSString *START_TEST_LABEL  = @"Start Test";
+NSString *END_TEST_LABEL    = @"End Test";
+NSString *READING_DATA      = @"Reading data...";
+NSString *SEARCHING_LABEL   = @"Searching...";
+
 
 const NSInteger OFF_TAG         = 0;
-const NSInteger ON_TAG          = 1;
-const NSInteger CONNECTED_TAG   = 2;
+const NSInteger START_TEST_TAG  = 1;
+const NSInteger END_TEST_TAG    = 4;
+const NSInteger READING_TAG     = 2;
+const NSInteger SEARCHING_TAG   = 3;
 
 
+NSString *const DeviceName = @"Reflex X1";
 
 @synthesize myModel     = _myModel;
 @synthesize myManager   = _myManager;
@@ -35,7 +50,7 @@ const NSInteger CONNECTED_TAG   = 2;
 @synthesize reflexLatLabel  = _reflexLatLabel;
 @synthesize reflexStrLabel  = _reflexStrLabel;
 
-
+bool onlyOurDevice = false;
 
 
 - (void)viewDidLoad
@@ -44,6 +59,7 @@ const NSInteger CONNECTED_TAG   = 2;
 	// Do any additional setup after loading the view, typically from a nib.
     self.myModel = [LQRModel sharedInstance];
     self.myManager = [[CBCentralManager alloc] initWithDelegate:self queue:nil options:nil];
+    
 }
 
 //-----------------------------------------------------------------------
@@ -51,13 +67,10 @@ const NSInteger CONNECTED_TAG   = 2;
     NSLog(@">> Multi button tapped: %@", sender.titleLabel.text);
     switch (sender.tag) {
         case OFF_TAG:
-            // Turn on bluetooth or notify;
+            [self alert];
             break;
-        case ON_TAG:
-            [self connect];
-            break;
-        case CONNECTED_TAG:
-            // Start test!
+        case START_TEST_TAG:
+            [self startTest];
             break;
         default:
             break;
@@ -66,6 +79,18 @@ const NSInteger CONNECTED_TAG   = 2;
 
 
 //-------------------------------------------------------------------------
+- (void) alert
+{
+  UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Enable Bluetooth"
+                message:@"Please enable bluetooth to continue."
+                delegate:nil
+                cancelButtonTitle:@"Ok"
+                otherButtonTitles: nil];
+    [alert show];
+    
+}
+//-------------------------------------------------------------------------
+
 - (void)blueToothOff
 {
     self.statusLabel.text = @"BT is off";
@@ -78,77 +103,52 @@ const NSInteger CONNECTED_TAG   = 2;
 - (void)blueToothOn
 {
     self.statusLabel.text = @"BT is on!";
-    [self.multiButton setTitle:ON_LABEL forState:UIControlStateNormal];
-    self.multiButton.tag = ON_TAG;
-    [self.multiButton setNeedsDisplay];
+    [self disconnected];
 }
 
 //-------------------------------------------------------------------------
 - (void)connect
 {
-    NSDictionary *scanOptions = [NSDictionary dictionaryWithObject:[NSNumber numberWithBool:NO]
-                                                            forKey:CBCentralManagerScanOptionAllowDuplicatesKey];
+    NSDictionary *scanOptions;
+    if (onlyOurDevice) {
+        scanOptions = [NSDictionary dictionaryWithObject:[NSNumber numberWithBool:NO]
+                  forKey:CBCentralManagerScanOptionAllowDuplicatesKey];
+        [self.myManager scanForPeripheralsWithServices:[NSArray arrayWithObject:self.myModel.uuidService] options:scanOptions];
+    } else {
+        scanOptions = nil;
+        [self.myManager scanForPeripheralsWithServices:nil options:scanOptions];
+    }
     NSLog(@">> Scanning for peripherals...");
-    //TODO CHANGE ME TO SPECIFIC SERVICE
-//    [self.myManager scanForPeripheralsWithServices:[NSArray arrayWithObject:self.myModel.uuidService] options:scanOptions];
-    [self.myManager scanForPeripheralsWithServices:nil options:scanOptions];
+    self.statusLabel.text = SEARCHING_LABEL;
 }
 
-
-
-#pragma mark Peripheral Delegate
-- (void)peripheral:(CBPeripheral *)peripheral didDiscoverServices:(NSError *)error
+//-------------------------------------------------------------------------
+- (void)connected
 {
-    NSLog(@"PER> Discovered services...");
-    for (CBService *service in peripheral.services) {
-        if ([service.UUID isEqual:self.myModel.uuidService]) {
-            NSLog(@"PER>> Discovered service: %@, with uuid: %@", service, service.UUID);
-            [peripheral discoverCharacteristics:nil forService:service];
-        }
-    }
-}
-- (void)peripheral:(CBPeripheral *)peripheral didDiscoverCharacteristicsForService:(CBService *)service error:(NSError *)error
-{
-    for (CBCharacteristic *characteristic in service.characteristics) {
-       [self.periph setNotifyValue:YES forCharacteristic:characteristic];
-        NSLog(@"PER>>>> Read char value: %s", characteristic.value.bytes);
-        // ONLY FOR SPECIFIC CHAR
-        if ([self.myModel.uuidCharacteristic isEqual:characteristic.UUID]) {
-            // Read the value!!
-            [self.periph setNotifyValue:YES forCharacteristic:characteristic];
-            NSLog(@"PER>>>> Read char value: %s", characteristic.value.bytes);
-        }
-
-    }
+       // TODO CHANGE ME TO SPECIFIC SERVICE
+//    [self.periph discoverServices:[NSArray arrayWithObject:self.myModel.uuidService]];
+    
+    //    [self.periph readValueForCharacteristic:[]];
+    self.periph.delegate = self;
+    [self.periph discoverServices:nil];
+    [self.statusLabel setText:@"Connected!"];
+    [self.multiButton setTag:END_TEST_TAG];
+    [self.multiButton setTitle:END_TEST_LABEL forState:UIControlStateNormal];
 }
 
-- (void)peripheral:(CBPeripheral *)peripheral didUpdateNotificationStateForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error
-{
-    if (error) {
-        NSLog(@"Error changing notification state: %@",
-              [error localizedDescription]);
-    }
+//-------------------------------------------------------------------------
+-(void)startTest {
+    [self connect];
 }
 //-------------------------------------------------------------------------
-- (void)peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error
-{
-    NSData * data = characteristic.value;
-    NSLog(@"PER>>>> Updated char value: %@", [characteristic.value description]);
-    
-    NSRange range = NSMakeRange (0, 6);
-    unsigned char aBuffer[6];
-    [data getBytes:aBuffer range:range];
-    int ham1 = aBuffer[0];
-    int ham2 = aBuffer[1];
-    int ham3 = aBuffer[2];
-    
-    self.hammerStrengthLabel.text = [NSString stringWithFormat:@"%d", ham1];
-    self.reflexLatLabel.text = [NSString stringWithFormat:@"%d", ham2];
-    self.reflexStrLabel.text = [NSString stringWithFormat:@"%d", ham3];
-    
-//    NSString *s = [[NSString alloc] initWithBytes:aBuffer length:6 encoding:NSUTF8StringEncoding];
-//    NSLog(@"PER>>>> Updated char value: %@", s);
+- (void)disconnected {
+    [self.multiButton setTag:START_TEST_TAG];
+    [self.multiButton setTitle:START_TEST_LABEL forState:UIControlStateNormal];
+    [self.statusLabel setText:@"Disconnected"];
+    self.periph = nil;
 }
+
+
 
 
 #pragma mark Central Manager Delegate
@@ -156,9 +156,12 @@ const NSInteger CONNECTED_TAG   = 2;
 - (void)centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral
      advertisementData:(NSDictionary *)advertisementData
                   RSSI:(NSNumber *)RSSI {
+    NSLog(@"LQR> Looking for UUID: %@", self.myModel.uuidDevice);
     NSLog(@"LQR> Advertisement...:%@",[advertisementData description]);
     NSLog(@">>> >> ...for peripheral:%@\n", peripheral);
-    if ([@"Reflex X1" isEqualToString:peripheral.name]) {
+    if ([self.myModel.uuidDevice isEqual:peripheral.identifier]
+                || !onlyOurDevice) {
+        NSLog(@"LQR> FOUND IT!");
         self.periph = peripheral;
         [self.myManager connectPeripheral:self.periph options:nil];
         [self.myManager stopScan];
@@ -174,12 +177,13 @@ const NSInteger CONNECTED_TAG   = 2;
 {
     NSLog(@"LQR> Did connect peripheral: %@", [peripheral description]);
     self.periph = peripheral;
-    self.periph.delegate = self;
-    [self.periph discoverServices:nil];
-    // TODO CHANGE ME TO SPECIFIC SERVICE
-//    [self.periph discoverServices:[NSArray arrayWithObject:self.myModel.uuidService]];
-    
-//    [self.periph readValueForCharacteristic:[]];
+    [self connected];
+}
+//-------------------------------------------------------------------------
+-(void)centralManager:(CBCentralManager *)central didDisconnectPeripheral:(CBPeripheral *)peripheral error:(NSError *)error
+{
+    NSLog(@"LQR> Did DISconnect peripheral: %@", [peripheral description]);
+    [self disconnected];
 }
 //-------------------------------------------------------------------------
 -(void)centralManager:(CBCentralManager *)central didRetrievePeripherals:(NSArray *)peripherals{
@@ -213,6 +217,68 @@ const NSInteger CONNECTED_TAG   = 2;
     }
     NSLog(@"%@", logMessage);
 }
+
+
+#pragma mark Peripheral Delegate
+//-----------------------------------------------------------------------
+- (void)peripheral:(CBPeripheral *)peripheral didDiscoverServices:(NSError *)error
+{
+    NSLog(@"PER> Discovered services...");
+    for (CBService *service in peripheral.services) {
+        if ([service.UUID isEqual:self.myModel.uuidService] || !onlyOurDevice) {
+            NSLog(@"PER>> Discovered service: %@, with uuid: %@", service, service.UUID);
+            // TODO: CHANGE TO OUR CHARACTERISTIC
+            [peripheral discoverCharacteristics:nil forService:service];
+        }
+    }
+}
+//-----------------------------------------------------------------------
+- (void)peripheral:(CBPeripheral *)peripheral didModifyServices:(NSArray *)invalidatedServices
+{
+    
+}
+//-----------------------------------------------------------------------
+- (void)peripheral:(CBPeripheral *)peripheral didDiscoverCharacteristicsForService:(CBService *)service
+             error:(NSError *)error
+{
+    for (CBCharacteristic *characteristic in service.characteristics) {
+        // ONLY FOR SPECIFIC CHAR
+        if ([self.myModel.uuidCharacteristic isEqual:characteristic.UUID] || !onlyOurDevice) {
+            // Subscribe to the value!!
+            [self.periph setNotifyValue:YES forCharacteristic:characteristic];
+        }
+
+    }
+}
+
+//-----------------------------------------------------------------------
+- (void)peripheral:(CBPeripheral *)peripheral didUpdateNotificationStateForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error
+{
+    if (error) {
+        NSLog(@"Error changing notification state: %@",
+              [error localizedDescription]);
+    }
+}
+//-------------------------------------------------------------------------
+- (void)peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error
+{
+    NSData * data = characteristic.value;
+    NSLog(@"PER> > Updated char value: %@", [characteristic.value description]);
+    
+    NSRange range = NSMakeRange (0, 6);
+    unsigned char aBuffer[6];
+    [data getBytes:aBuffer range:range];
+    int ham1 = aBuffer[0];
+    int ham2 = aBuffer[1];
+    int ham3 = aBuffer[2];
+    
+    self.hammerStrengthLabel.text = [NSString stringWithFormat:@"%d", ham1];
+    self.reflexLatLabel.text = [NSString stringWithFormat:@"%d", ham2];
+    self.reflexStrLabel.text = [NSString stringWithFormat:@"%d", ham3];
+
+    [self.myManager cancelPeripheralConnection:self.periph];
+}
+
 
 
 //-----------------------------------------------------------------------

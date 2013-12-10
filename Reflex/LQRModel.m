@@ -13,7 +13,6 @@
 @synthesize uuidDevice          = _uuidDevice;
 @synthesize uuidService         = _uuidService;
 @synthesize uuidCharacteristic  = _uuidCharacteristic;
-
 @synthesize history = _history;
 
 
@@ -28,7 +27,8 @@
 
 - (id)init {
     if (self = [super init]) {
-//        self.uuidDevice = [CBUUID UUIDWithString:@""];
+        self.uuidDevice = [[NSUUID alloc] initWithUUIDString:@"7C42A62A-92E8-EB1C-34F6-408A12BCD60F"];
+        
         self.uuidService = [CBUUID UUIDWithString:@"e14235c0-5d26-11e3-949a-0800200c9a66"];
         self.uuidCharacteristic = [CBUUID UUIDWithString:@"e14235c1-5d26-11e3-949a-0800200c9a66"];
         
@@ -38,11 +38,10 @@
 }
 
 
-- (void)addValueToHistory: (int)value
+- (void)addValueToHistory: (DataModel *)value
 {
-    NSNumber *num = [NSNumber numberWithInt:value];
     NSDate *now = [NSDate dateWithTimeIntervalSinceNow:0];
-    [self.history setObject:num forKey:now];
+    [self.history setObject:value forKey:now];
 }
 
 - (NSArray *)getHistoryValues
