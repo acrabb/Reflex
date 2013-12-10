@@ -10,8 +10,8 @@
 
 @interface DataModel : NSObject
 
-@property (nonatomic) NSInteger *ham_strength;
-@property (nonatomic) NSInteger *ref_latency;
-@property (nonatomic) NSInteger *ref_strength;
+@property (nonatomic) NSNumber *hamStrength;
+@property (nonatomic) NSNumber *refLatency;
+@property (nonatomic) NSNumber *refStrength;
 
 @end

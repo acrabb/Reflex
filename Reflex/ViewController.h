@@ -17,6 +17,7 @@
 
 @property (strong, nonatomic) LQRModel          *myModel;
 @property (weak, nonatomic) IBOutlet UIButton   *multiButton;
+@property (weak, nonatomic) IBOutlet UIButton   *historyButton;
 @property (weak, nonatomic) IBOutlet UILabel    *statusLabel;
 @property (strong, nonatomic) CBPeripheral      *periph;
 

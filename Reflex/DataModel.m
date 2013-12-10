@@ -10,4 +10,8 @@
 
 @implementation DataModel
 
+@synthesize hamStrength    = _hamStrength;
+@synthesize refLatency     = _refLatency;
+@synthesize refStrength    = _refStrength;
+
 @end

@@ -44,6 +44,11 @@
     [self.history setObject:value forKey:now];
 }
 
+-(NSArray *)getHistoryKeysSorted;
+{
+    NSArray *keys = self.history.allKeys;
+    return [keys sortedArrayUsingSelector:@selector(compare:)];
+}
 - (NSArray *)getHistoryValues
 {
     return self.history.allValues;

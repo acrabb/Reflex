@@ -44,6 +44,7 @@ NSString *const DeviceName = @"Reflex X1";
 @synthesize myManager   = _myManager;
 @synthesize statusLabel = _statusLabel;
 @synthesize multiButton = _multiButton;
+@synthesize historyButton = _historyButton;
 @synthesize periph      = _periph;
 
 @synthesize hammerStrengthLabel = _hammerStrengthLabel;
@@ -53,13 +54,24 @@ NSString *const DeviceName = @"Reflex X1";
 bool onlyOurDevice = false;
 
 
+//-----------------------------------------------------------------------
 - (void)viewDidLoad
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
     self.myModel = [LQRModel sharedInstance];
     self.myManager = [[CBCentralManager alloc] initWithDelegate:self queue:nil options:nil];
-    
+    self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"pretty.jpg"]];
+    [self.multiButton.layer setCornerRadius:5.0];
+    [self.historyButton.layer setCornerRadius:5.0];
+    [self.hammerStrengthLabel.layer setCornerRadius:5.0];
+    [self.reflexLatLabel.layer setCornerRadius:5.0];
+    [self.reflexStrLabel.layer setCornerRadius:5.0];
+}
+
+//-----------------------------------------------------------------------
+-(UIStatusBarStyle)preferredStatusBarStyle{
+    return UIStatusBarStyleLightContent;
 }
 
 //-----------------------------------------------------------------------
@@ -276,6 +288,14 @@ bool onlyOurDevice = false;
     self.reflexLatLabel.text = [NSString stringWithFormat:@"%d", ham2];
     self.reflexStrLabel.text = [NSString stringWithFormat:@"%d", ham3];
 
+    
+    DataModel *dm = [[DataModel alloc] init];
+    dm.hamStrength  = [NSNumber numberWithInt:ham1];
+    dm.refLatency   = [NSNumber numberWithInt:ham2];
+    dm.refStrength  = [NSNumber numberWithInt:ham3];
+    
+    [self.myModel addValueToHistory:dm];
+    
     [self.myManager cancelPeripheralConnection:self.periph];
 }
 

@@ -16,6 +16,9 @@ LQRModel *myModel;
 
 @implementation InfoViewController
 
+@synthesize backButton = _backButton;
+
+//-----------------------------------------------------------------------
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
@@ -25,22 +28,29 @@ LQRModel *myModel;
     return self;
 }
 
+//-----------------------------------------------------------------------
 - (void)viewDidLoad
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view.
     NSLog(@">> Info view controller loaded.");
     myModel = [LQRModel sharedInstance];
+    [self.backButton.layer setCornerRadius:10.0];
     
-    NSArray *values = [myModel getHistoryValues];
+}
+//-----------------------------------------------------------------------
+-(UIStatusBarStyle)preferredStatusBarStyle{
+    return UIStatusBarStyleLightContent;
 }
 
+//-----------------------------------------------------------------------
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
 
+//-----------------------------------------------------------------------
 - (IBAction)backButtonTapped:(id)sender {
     [self dismissViewControllerAnimated:YES completion:nil];
 }

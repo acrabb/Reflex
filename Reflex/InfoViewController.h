@@ -12,5 +12,6 @@
 @interface InfoViewController : ViewController
 - (IBAction)backButtonTapped:(id)sender;
 @property (weak, nonatomic) IBOutlet UITableView *historyTable;
+@property (weak, nonatomic) IBOutlet UIButton *backButton;
 
 @end

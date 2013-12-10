@@ -20,6 +20,9 @@
 
 @property (strong, nonatomic) NSMutableDictionary *history;
 
+
+- (void) addValueToHistory: (DataModel *)value;
 -(NSArray *)getHistoryValues;
+-(NSArray *)getHistoryKeysSorted;
 
 @end

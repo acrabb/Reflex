@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6508435D18578B73008EAD8C /* background@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 6508435C18578B73008EAD8C /* background@2x.png */; };
+		6508435F18578E71008EAD8C /* whiteBack@2x.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 6508435E18578E71008EAD8C /* whiteBack@2x.jpg */; };
+		650843611857C92E008EAD8C /* pretty@2x.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 650843601857C92E008EAD8C /* pretty@2x.jpg */; };
 		65227AB418528FAC0012B980 /* InfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 65227AB318528FAC0012B980 /* InfoViewController.m */; };
 		65BE9B0418569CE9005684EC /* DataModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 65BE9B0318569CE9005684EC /* DataModel.m */; };
 		65F49E03184A501F007D8E8F /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 65F49E02184A501F007D8E8F /* Foundation.framework */; };
@@ -39,6 +42,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		6508435C18578B73008EAD8C /* background@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "background@2x.png"; sourceTree = "<group>"; };
+		6508435E18578E71008EAD8C /* whiteBack@2x.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "whiteBack@2x.jpg"; sourceTree = "<group>"; };
+		650843601857C92E008EAD8C /* pretty@2x.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "pretty@2x.jpg"; sourceTree = "<group>"; };
 		65227AB218528FAC0012B980 /* InfoViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InfoViewController.h; sourceTree = "<group>"; };
 		65227AB318528FAC0012B980 /* InfoViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = InfoViewController.m; sourceTree = "<group>"; };
 		65BE9B0218569CE9005684EC /* DataModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataModel.h; sourceTree = "<group>"; };
@@ -93,9 +99,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		6508435B18578B59008EAD8C /* assets */ = {
+			isa = PBXGroup;
+			children = (
+				650843601857C92E008EAD8C /* pretty@2x.jpg */,
+				6508435E18578E71008EAD8C /* whiteBack@2x.jpg */,
+				6508435C18578B73008EAD8C /* background@2x.png */,
+			);
+			name = assets;
+			sourceTree = "<group>";
+		};
 		65F49DF6184A501F007D8E8F = {
 			isa = PBXGroup;
 			children = (
+				6508435B18578B59008EAD8C /* assets */,
 				65F49E08184A501F007D8E8F /* Reflex */,
 				65F49E2A184A501F007D8E8F /* ReflexTests */,
 				65F49E01184A501F007D8E8F /* Frameworks */,
@@ -250,10 +267,13 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6508435F18578E71008EAD8C /* whiteBack@2x.jpg in Resources */,
 				65F49E19184A501F007D8E8F /* Main_iPad.storyboard in Resources */,
+				650843611857C92E008EAD8C /* pretty@2x.jpg in Resources */,
 				65F49E1E184A501F007D8E8F /* Images.xcassets in Resources */,
 				65F49E16184A501F007D8E8F /* Main_iPhone.storyboard in Resources */,
 				65F49E0D184A501F007D8E8F /* InfoPlist.strings in Resources */,
+				6508435D18578B73008EAD8C /* background@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
