@@ -11,6 +11,9 @@
 		6508435F18578E71008EAD8C /* whiteBack@2x.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 6508435E18578E71008EAD8C /* whiteBack@2x.jpg */; };
 		650843611857C92E008EAD8C /* pretty@2x.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 650843601857C92E008EAD8C /* pretty@2x.jpg */; };
 		65227AB418528FAC0012B980 /* InfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 65227AB318528FAC0012B980 /* InfoViewController.m */; };
+		655CE8251857E237003FF7EE /* libCorePlot-CocoaTouch.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 655CE8221857E223003FF7EE /* libCorePlot-CocoaTouch.a */; };
+		655CE8271857E304003FF7EE /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 655CE8261857E304003FF7EE /* QuartzCore.framework */; };
+		655CE8291857E317003FF7EE /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 655CE8281857E317003FF7EE /* Accelerate.framework */; };
 		65BE9B0418569CE9005684EC /* DataModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 65BE9B0318569CE9005684EC /* DataModel.m */; };
 		65F49E03184A501F007D8E8F /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 65F49E02184A501F007D8E8F /* Foundation.framework */; };
 		65F49E05184A501F007D8E8F /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 65F49E04184A501F007D8E8F /* CoreGraphics.framework */; };
@@ -32,6 +35,20 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		655CE8211857E223003FF7EE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 655CE81B1857E223003FF7EE /* CorePlot-CocoaTouch.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = BC9B83470FB8A0A40035D8DA;
+			remoteInfo = "CorePlot-CocoaTouch";
+		};
+		655CE8231857E22F003FF7EE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 655CE81B1857E223003FF7EE /* CorePlot-CocoaTouch.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = BC9B83460FB8A0A40035D8DA;
+			remoteInfo = "CorePlot-CocoaTouch";
+		};
 		65F49E28184A501F007D8E8F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 65F49DF7184A501F007D8E8F /* Project object */;
@@ -47,6 +64,9 @@
 		650843601857C92E008EAD8C /* pretty@2x.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "pretty@2x.jpg"; sourceTree = "<group>"; };
 		65227AB218528FAC0012B980 /* InfoViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InfoViewController.h; sourceTree = "<group>"; };
 		65227AB318528FAC0012B980 /* InfoViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = InfoViewController.m; sourceTree = "<group>"; };
+		655CE81B1857E223003FF7EE /* CorePlot-CocoaTouch.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "CorePlot-CocoaTouch.xcodeproj"; path = "../CorePlot_1.4/Source/framework/CorePlot-CocoaTouch.xcodeproj"; sourceTree = "<group>"; };
+		655CE8261857E304003FF7EE /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		655CE8281857E317003FF7EE /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		65BE9B0218569CE9005684EC /* DataModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataModel.h; sourceTree = "<group>"; };
 		65BE9B0318569CE9005684EC /* DataModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DataModel.m; sourceTree = "<group>"; };
 		65F49DFF184A501F007D8E8F /* Reflex.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Reflex.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -79,10 +99,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				655CE8291857E317003FF7EE /* Accelerate.framework in Frameworks */,
+				655CE8271857E304003FF7EE /* QuartzCore.framework in Frameworks */,
 				65F49E3B184A5408007D8E8F /* CoreBluetooth.framework in Frameworks */,
 				65F49E05184A501F007D8E8F /* CoreGraphics.framework in Frameworks */,
 				65F49E07184A501F007D8E8F /* UIKit.framework in Frameworks */,
 				65F49E03184A501F007D8E8F /* Foundation.framework in Frameworks */,
+				655CE8251857E237003FF7EE /* libCorePlot-CocoaTouch.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -109,9 +132,18 @@
 			name = assets;
 			sourceTree = "<group>";
 		};
+		655CE81C1857E223003FF7EE /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				655CE8221857E223003FF7EE /* libCorePlot-CocoaTouch.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		65F49DF6184A501F007D8E8F = {
 			isa = PBXGroup;
 			children = (
+				655CE81B1857E223003FF7EE /* CorePlot-CocoaTouch.xcodeproj */,
 				6508435B18578B59008EAD8C /* assets */,
 				65F49E08184A501F007D8E8F /* Reflex */,
 				65F49E2A184A501F007D8E8F /* ReflexTests */,
@@ -132,6 +164,8 @@
 		65F49E01184A501F007D8E8F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				655CE8281857E317003FF7EE /* Accelerate.framework */,
+				655CE8261857E304003FF7EE /* QuartzCore.framework */,
 				65F49E3A184A5408007D8E8F /* CoreBluetooth.framework */,
 				65F49E02184A501F007D8E8F /* Foundation.framework */,
 				65F49E04184A501F007D8E8F /* CoreGraphics.framework */,
@@ -205,6 +239,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				655CE8241857E22F003FF7EE /* PBXTargetDependency */,
 			);
 			name = Reflex;
 			productName = Reflex;
@@ -254,6 +289,12 @@
 			mainGroup = 65F49DF6184A501F007D8E8F;
 			productRefGroup = 65F49E00184A501F007D8E8F /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 655CE81C1857E223003FF7EE /* Products */;
+					ProjectRef = 655CE81B1857E223003FF7EE /* CorePlot-CocoaTouch.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				65F49DFE184A501F007D8E8F /* Reflex */,
@@ -261,6 +302,16 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		655CE8221857E223003FF7EE /* libCorePlot-CocoaTouch.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "libCorePlot-CocoaTouch.a";
+			remoteRef = 655CE8211857E223003FF7EE /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		65F49DFD184A501F007D8E8F /* Resources */ = {
@@ -312,6 +363,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		655CE8241857E22F003FF7EE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "CorePlot-CocoaTouch";
+			targetProxy = 655CE8231857E22F003FF7EE /* PBXContainerItemProxy */;
+		};
 		65F49E29184A501F007D8E8F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 65F49DFE184A501F007D8E8F /* Reflex */;
@@ -438,7 +494,13 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Reflex/Reflex-Prefix.pch";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					"./../CorePlot_1.4/Source/framework/**",
+				);
 				INFOPLIST_FILE = "Reflex/Reflex-Info.plist";
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				WRAPPER_EXTENSION = app;
@@ -454,7 +516,13 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Reflex/Reflex-Prefix.pch";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					"./../CorePlot_1.4/Source/framework/**",
+				);
 				INFOPLIST_FILE = "Reflex/Reflex-Info.plist";
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				WRAPPER_EXTENSION = app;

@@ -14,4 +14,13 @@
 @synthesize refLatency     = _refLatency;
 @synthesize refStrength    = _refStrength;
 
+- (id)initWithHammerStrength:(int)hs reflexLatency:(int)rl reflexStrength:(int)rs {
+    if (self = [super init]) {
+        self.hamStrength    = [NSNumber numberWithInt: hs];
+        self.refLatency     = [NSNumber numberWithInt: rl];
+        self.refStrength    = [NSNumber numberWithInt: rs];
+    }
+    return self;
+}
+
 @end

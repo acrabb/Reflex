@@ -14,4 +14,5 @@
 @property (nonatomic) NSNumber *refLatency;
 @property (nonatomic) NSNumber *refStrength;
 
+- (id)initWithHammerStrength:(int)hs reflexLatency:(int)rl reflexStrength:(int)rs;
 @end
