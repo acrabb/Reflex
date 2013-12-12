@@ -1,4 +1,4 @@
-//
+
 //  LQRModel.m
 //  Reflex
 //
@@ -12,6 +12,7 @@
 
 @synthesize uuidDevice          = _uuidDevice;
 @synthesize uuidService         = _uuidService;
+@synthesize uuidDeviceService   = _uuidDeviceService;
 @synthesize uuidCharacteristic  = _uuidCharacteristic;
 @synthesize history = _history;
 
@@ -32,9 +33,11 @@ const int kLQROptionReflexStrength  = 3;
 
 - (id)init {
     if (self = [super init]) {
-        self.uuidDevice = [[NSUUID alloc] initWithUUIDString:@"7C42A62A-92E8-EB1C-34F6-408A12BCD60F"];
+//        self.uuidDevice = [[NSUUID alloc] initWithUUIDString:@"7C42A62A-92E8-EB1C-34F6-408A12BCD60F"];
+        self.uuidDevice = [[NSUUID alloc] initWithUUIDString:@"A0FBB8C4-F62D-1010-AB42-5B9BF3E8A499"];
         
         self.uuidService = [CBUUID UUIDWithString:@"e14235c0-5d26-11e3-949a-0800200c9a66"];
+        self.uuidDeviceService = [CBUUID UUIDWithString:@"195ae58a-437a-489b-b0cd-b7c9c394bae4"];
         self.uuidCharacteristic = [CBUUID UUIDWithString:@"e14235c1-5d26-11e3-949a-0800200c9a66"];
         
         self.history = [[NSMutableDictionary alloc] init];
@@ -45,7 +48,7 @@ const int kLQROptionReflexStrength  = 3;
 
 - (void)addValueToHistory: (DataModel *)value
 {
-    NSDate *now = [NSDate dateWithTimeIntervalSinceNow:0];
+    NSDate *now = [NSDate date];
     [self.history setObject:value forKey:now];
 }
 
@@ -54,17 +57,6 @@ const int kLQROptionReflexStrength  = 3;
 {
     NSDate *weekAgo = [NSDate dateWithTimeIntervalSinceNow:-60*60*24*5];
     return weekAgo;
-//   	NSDateComponents *dateComponents = [[NSDateComponents alloc] init];
-//    
-//	[dateComponents setMonth:date mo];
-//	[dateComponents setDay:10];
-//	[dateComponents setYear:2013];
-//	[dateComponents setHour:12];
-//	[dateComponents setMinute:0];
-//	[dateComponents setSecond:0];
-//	NSCalendar *gregorian = [[NSCalendar alloc]
-//							 initWithCalendarIdentifier:NSGregorianCalendar];
-//    return [gregorian dateFromComponents:dateComponents];
 }
 
 

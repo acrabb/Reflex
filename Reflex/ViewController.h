@@ -18,12 +18,14 @@
 @property (strong, nonatomic) LQRModel          *myModel;
 @property (weak, nonatomic) IBOutlet UIButton   *multiButton;
 @property (weak, nonatomic) IBOutlet UIButton   *historyButton;
-@property (weak, nonatomic) IBOutlet UILabel    *statusLabel;
+@property (weak, nonatomic) IBOutlet UIButton   *resetButton;
+//@property (weak, nonatomic) IBOutlet UILabel    *statusLabel;
 @property (strong, nonatomic) CBPeripheral      *periph;
 
 @property (weak, nonatomic) IBOutlet UILabel *hammerStrengthLabel;
 @property (weak, nonatomic) IBOutlet UILabel *reflexLatLabel;
 @property (weak, nonatomic) IBOutlet UILabel *reflexStrLabel;
+- (IBAction)resetTapped:(UIButton *)sender;
 
 
 

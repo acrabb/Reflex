@@ -22,6 +22,7 @@ extern const int kLQROptionReflexStrength;
 
 @property (strong, nonatomic) NSUUID *uuidDevice;
 @property (strong, nonatomic) CBUUID *uuidService;
+@property (strong, nonatomic) CBUUID *uuidDeviceService;
 @property (strong, nonatomic) CBUUID *uuidCharacteristic;
 
 @property (strong, nonatomic) NSMutableDictionary *history;

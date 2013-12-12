@@ -29,6 +29,7 @@ NSString *START_TEST_LABEL  = @"Start Test";
 NSString *END_TEST_LABEL    = @"End Test";
 NSString *READING_DATA      = @"Reading data...";
 NSString *SEARCHING_LABEL   = @"Searching...";
+NSString *CLEARED_LABEL     = @"--";
 
 
 const NSInteger STATUS_BT_OFF       = 0;
@@ -41,18 +42,19 @@ int status = -1;
 
 NSString *const DeviceName = @"Reflex X1";
 
-@synthesize myModel     = _myModel;
-@synthesize myManager   = _myManager;
-@synthesize statusLabel = _statusLabel;
-@synthesize multiButton = _multiButton;
-@synthesize historyButton = _historyButton;
-@synthesize periph      = _periph;
+@synthesize myModel         = _myModel;
+@synthesize myManager       = _myManager;
+//@synthesize statusLabel     = _statusLabel;
+@synthesize multiButton     = _multiButton;
+@synthesize historyButton   = _historyButton;
+@synthesize resetButton     = _resetButton;
+@synthesize periph          = _periph;
 
 @synthesize hammerStrengthLabel = _hammerStrengthLabel;
-@synthesize reflexLatLabel  = _reflexLatLabel;
-@synthesize reflexStrLabel  = _reflexStrLabel;
+@synthesize reflexLatLabel      = _reflexLatLabel;
+@synthesize reflexStrLabel      = _reflexStrLabel;
 
-bool onlyOurDevice = false;
+bool onlyOurDevice = true;
 NSTimer *connectTimer;
 
 
@@ -65,10 +67,11 @@ NSTimer *connectTimer;
     self.myManager = [[CBCentralManager alloc] initWithDelegate:self queue:nil options:nil];
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"pretty.jpg"]];
     [self.multiButton.layer setCornerRadius:5.0];
+    [self.resetButton.layer setCornerRadius:5.0];
     [self.historyButton.layer setCornerRadius:5.0];
-    [self.hammerStrengthLabel.layer setCornerRadius:5.0];
     [self.reflexLatLabel.layer setCornerRadius:5.0];
     [self.reflexStrLabel.layer setCornerRadius:5.0];
+    [self.hammerStrengthLabel.layer setCornerRadius:5.0];
     status = -1;
 }
 
@@ -76,7 +79,6 @@ NSTimer *connectTimer;
 -(UIStatusBarStyle)preferredStatusBarStyle{
     return UIStatusBarStyleLightContent;
 }
-
 
 
 //-------------------------------------------------------------------------
@@ -95,14 +97,12 @@ NSTimer *connectTimer;
 //-------------------------------------------------------------------------
 - (void)connect
 {
-    NSDictionary *scanOptions;
+    NSDictionary *scanOptions = [NSDictionary dictionaryWithObject:[NSNumber numberWithBool:NO]
+                                                 forKey:CBCentralManagerScanOptionAllowDuplicatesKey];
     NSArray *services;
     if (onlyOurDevice) {
-        scanOptions = [NSDictionary dictionaryWithObject:[NSNumber numberWithBool:NO]
-                  forKey:CBCentralManagerScanOptionAllowDuplicatesKey];
-        services = [NSArray arrayWithObject:self.myModel.uuidService];
+        services = [NSArray arrayWithObject:self.myModel.uuidDeviceService];
     } else {
-        scanOptions = nil;
         services = nil;
     }
     NSLog(@">> Scanning for peripherals...");
@@ -111,28 +111,23 @@ NSTimer *connectTimer;
     
     status = STATUS_SEARCHING;
     [self updateStatus];
-    
-    self.statusLabel.text = SEARCHING_LABEL;
 }
 
 //-------------------------------------------------------------------------
 - (void)startConnectTimer;
 {
     if (connectTimer == nil) {
-//        connectTimer = [[NSTimer alloc] initWithFireDate:[NSDate dateWithTimeIntervalSinceNow:5]
-//                                                  interval:0.0 target:self selector:@selector(timerCompletion)
-//                                                  userInfo:nil repeats:false];
         connectTimer = [NSTimer scheduledTimerWithTimeInterval:5 target:self
                                                       selector:@selector(timerCompletion) userInfo:nil
                                                        repeats:false];
+        NSLog(@"Timer> Starting timer.");
     }
-    NSLog(@"Timer> Starting timer.");
 }
 //-------------------------------------------------------------------------
 - (void)timerCompletion;
 {
     NSLog(@"Timer> Timer completed");
-    if (connectTimer != nil) {
+    if (connectTimer != nil && status==STATUS_SEARCHING) {
         [connectTimer invalidate];
         connectTimer = nil;
         status = STATUS_DISCONNECTED;
@@ -140,8 +135,18 @@ NSTimer *connectTimer;
         [self alertWithTitle:@"Connection Timeout" andMessage:@"We couldn't find the reflex device."];
     }
 }
+//-------------------------------------------------------------------------
+- (void)endTest;
+{
+    
+}
 
 
+- (IBAction)resetTapped:(UIButton *)sender {
+    [self.hammerStrengthLabel setText:CLEARED_LABEL];
+    [self.reflexStrLabel setText:CLEARED_LABEL];
+    [self.reflexLatLabel setText:CLEARED_LABEL];
+}
 //-----------------------------------------------------------------------
 - (IBAction)multiButtonTapped:(UIButton*)sender {
     NSLog(@">> Multi button tapped: %@", sender.titleLabel.text);
@@ -155,6 +160,7 @@ NSTimer *connectTimer;
         case STATUS_SEARCHING:
             break;
         case STATUS_CONNECTED:
+               [self endTest];
             break;
 //        case STATUS_TESTING:
 //            break;
@@ -198,12 +204,10 @@ NSTimer *connectTimer;
             self.multiButton.userInteractionEnabled = true;
             break;
     }
-    self.statusLabel.text = statusText;
+//    self.statusLabel.text = statusText;
     [self.multiButton setTitle:buttonTitle forState:UIControlStateNormal];
 //    [self.multiButton setNeedsDisplay];
 }
-
-
 
 
 #pragma mark Central Manager Delegate
@@ -214,13 +218,10 @@ NSTimer *connectTimer;
     NSLog(@"LQR> Looking for UUID: %@", self.myModel.uuidDevice);
     NSLog(@"LQR> Advertisement...:%@",[advertisementData description]);
     NSLog(@">>> >> ...for peripheral:%@\n", peripheral);
-    if ([self.myModel.uuidDevice isEqual:peripheral.identifier]
-                || !onlyOurDevice) {
-        NSLog(@"LQR> FOUND IT!");
-        self.periph = peripheral;
-        [self.myManager connectPeripheral:self.periph options:nil];
-        [self.myManager stopScan];
-    }
+    NSLog(@"LQR> FOUND ONE!");
+    self.periph = peripheral;
+    [self.myManager connectPeripheral:self.periph options:nil];
+    [self.myManager stopScan];
 }
 //-------------------------------------------------------------------------
 - (void) centralManager:(CBCentralManager *)central didFailToConnectPeripheral:(CBPeripheral *)peripheral error:(NSError *)error
@@ -233,11 +234,12 @@ NSTimer *connectTimer;
     NSLog(@"LQR> Did connect peripheral: %@", [peripheral description]);
     self.periph = peripheral;
     self.periph.delegate = self;
-    if (onlyOurDevice) {
-        [self.periph discoverServices:[NSArray arrayWithObject:self.myModel.uuidService]];
-    } else {
-        [self.periph discoverServices:nil];
-    }
+//    if (onlyOurDevice) {
+//        [self.periph discoverServices:[NSArray arrayWithObject:self.myModel.uuidService]];
+//    } else {
+//        [self.periph discoverServices:nil];
+//    }
+    [self.periph discoverServices:nil];
     
     status = STATUS_CONNECTED;
     [self updateStatus];
@@ -291,10 +293,10 @@ NSTimer *connectTimer;
 - (void)peripheral:(CBPeripheral *)peripheral didDiscoverServices:(NSError *)error
 {
     NSLog(@"PER> Discovered services...");
+    NSLog(@"%@", peripheral.services);
     for (CBService *service in peripheral.services) {
+        NSLog(@"PER>> Discovered service: %@, with uuid: %@", service, service.UUID);
         if ([service.UUID isEqual:self.myModel.uuidService] || !onlyOurDevice) {
-            NSLog(@"PER>> Discovered service: %@, with uuid: %@", service, service.UUID);
-            // TODO: CHANGE TO OUR CHARACTERISTIC
             [peripheral discoverCharacteristics:nil forService:service];
         }
     }
@@ -302,19 +304,16 @@ NSTimer *connectTimer;
 //-----------------------------------------------------------------------
 - (void)peripheral:(CBPeripheral *)peripheral didModifyServices:(NSArray *)invalidatedServices
 {
-    
+    NSLog(@"PER> Did modify services.");
 }
 //-----------------------------------------------------------------------
 - (void)peripheral:(CBPeripheral *)peripheral didDiscoverCharacteristicsForService:(CBService *)service
              error:(NSError *)error
 {
     for (CBCharacteristic *characteristic in service.characteristics) {
-        // ONLY FOR SPECIFIC CHAR
         if ([self.myModel.uuidCharacteristic isEqual:characteristic.UUID] || !onlyOurDevice) {
-            // Subscribe to the value!!
             [self.periph setNotifyValue:YES forCharacteristic:characteristic];
         }
-
     }
 }
 
