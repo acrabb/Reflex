@@ -31,12 +31,13 @@ NSString *READING_DATA      = @"Reading data...";
 NSString *SEARCHING_LABEL   = @"Searching...";
 
 
-const NSInteger OFF_TAG         = 0;
-const NSInteger START_TEST_TAG  = 1;
-const NSInteger END_TEST_TAG    = 4;
-const NSInteger READING_TAG     = 2;
-const NSInteger SEARCHING_TAG   = 3;
-
+const NSInteger STATUS_BT_OFF       = 0;
+const NSInteger STATUS_DISCONNECTED = 1;
+const NSInteger STATUS_SEARCHING    = 2;
+const NSInteger STATUS_CONNECTED    = 3;
+const NSInteger STATUS_TESTING      = 4;
+const NSInteger STATUS_READING      = 5;
+int status = -1;
 
 NSString *const DeviceName = @"Reflex X1";
 
@@ -52,6 +53,7 @@ NSString *const DeviceName = @"Reflex X1";
 @synthesize reflexStrLabel  = _reflexStrLabel;
 
 bool onlyOurDevice = false;
+NSTimer *connectTimer;
 
 
 //-----------------------------------------------------------------------
@@ -67,6 +69,7 @@ bool onlyOurDevice = false;
     [self.hammerStrengthLabel.layer setCornerRadius:5.0];
     [self.reflexLatLabel.layer setCornerRadius:5.0];
     [self.reflexStrLabel.layer setCornerRadius:5.0];
+    status = -1;
 }
 
 //-----------------------------------------------------------------------
@@ -74,90 +77,130 @@ bool onlyOurDevice = false;
     return UIStatusBarStyleLightContent;
 }
 
-//-----------------------------------------------------------------------
-- (IBAction)multiButtonTapped:(UIButton*)sender {
-    NSLog(@">> Multi button tapped: %@", sender.titleLabel.text);
-    switch (sender.tag) {
-        case OFF_TAG:
-            [self alert];
-            break;
-        case START_TEST_TAG:
-            [self startTest];
-            break;
-        default:
-            break;
-    }
-}
 
 
 //-------------------------------------------------------------------------
-- (void) alert
+- (void) alertWithTitle:(NSString*)title andMessage:(NSString*)message
 {
-  UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Enable Bluetooth"
-                message:@"Please enable bluetooth to continue."
+  UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title
+                message:message
                 delegate:nil
                 cancelButtonTitle:@"Ok"
                 otherButtonTitles: nil];
     [alert show];
     
 }
-//-------------------------------------------------------------------------
 
-- (void)blueToothOff
-{
-    self.statusLabel.text = @"BT is off";
-    [self.multiButton setTitle:OFF_LABEL forState:UIControlStateNormal];
-    self.multiButton.tag = OFF_TAG;
-    [self.multiButton setNeedsDisplay];
-}
-
-//-------------------------------------------------------------------------
-- (void)blueToothOn
-{
-    self.statusLabel.text = @"BT is on!";
-    [self disconnected];
-}
 
 //-------------------------------------------------------------------------
 - (void)connect
 {
     NSDictionary *scanOptions;
+    NSArray *services;
     if (onlyOurDevice) {
         scanOptions = [NSDictionary dictionaryWithObject:[NSNumber numberWithBool:NO]
                   forKey:CBCentralManagerScanOptionAllowDuplicatesKey];
-        [self.myManager scanForPeripheralsWithServices:[NSArray arrayWithObject:self.myModel.uuidService] options:scanOptions];
+        services = [NSArray arrayWithObject:self.myModel.uuidService];
     } else {
         scanOptions = nil;
-        [self.myManager scanForPeripheralsWithServices:nil options:scanOptions];
+        services = nil;
     }
     NSLog(@">> Scanning for peripherals...");
+    [self startConnectTimer];
+    [self.myManager scanForPeripheralsWithServices:services options:scanOptions];
+    
+    status = STATUS_SEARCHING;
+    [self updateStatus];
+    
     self.statusLabel.text = SEARCHING_LABEL;
 }
 
 //-------------------------------------------------------------------------
-- (void)connected
+- (void)startConnectTimer;
 {
-       // TODO CHANGE ME TO SPECIFIC SERVICE
-//    [self.periph discoverServices:[NSArray arrayWithObject:self.myModel.uuidService]];
-    
-    //    [self.periph readValueForCharacteristic:[]];
-    self.periph.delegate = self;
-    [self.periph discoverServices:nil];
-    [self.statusLabel setText:@"Connected!"];
-    [self.multiButton setTag:END_TEST_TAG];
-    [self.multiButton setTitle:END_TEST_LABEL forState:UIControlStateNormal];
+    if (connectTimer == nil) {
+//        connectTimer = [[NSTimer alloc] initWithFireDate:[NSDate dateWithTimeIntervalSinceNow:5]
+//                                                  interval:0.0 target:self selector:@selector(timerCompletion)
+//                                                  userInfo:nil repeats:false];
+        connectTimer = [NSTimer scheduledTimerWithTimeInterval:5 target:self
+                                                      selector:@selector(timerCompletion) userInfo:nil
+                                                       repeats:false];
+    }
+    NSLog(@"Timer> Starting timer.");
+}
+//-------------------------------------------------------------------------
+- (void)timerCompletion;
+{
+    NSLog(@"Timer> Timer completed");
+    if (connectTimer != nil) {
+        [connectTimer invalidate];
+        connectTimer = nil;
+        status = STATUS_DISCONNECTED;
+        [self updateStatus];
+        [self alertWithTitle:@"Connection Timeout" andMessage:@"We couldn't find the reflex device."];
+    }
 }
 
-//-------------------------------------------------------------------------
--(void)startTest {
-    [self connect];
+
+//-----------------------------------------------------------------------
+- (IBAction)multiButtonTapped:(UIButton*)sender {
+    NSLog(@">> Multi button tapped: %@", sender.titleLabel.text);
+       switch (status) {
+        case STATUS_BT_OFF:
+            [self alertWithTitle:@"Enable Bluetooth" andMessage:@"Please enable bluetooth in settings to continue."];
+            break;
+        case STATUS_DISCONNECTED:
+              [self connect];
+            break;
+        case STATUS_SEARCHING:
+            break;
+        case STATUS_CONNECTED:
+            break;
+//        case STATUS_TESTING:
+//            break;
+        case STATUS_READING:
+            break;
+       }
 }
-//-------------------------------------------------------------------------
-- (void)disconnected {
-    [self.multiButton setTag:START_TEST_TAG];
-    [self.multiButton setTitle:START_TEST_LABEL forState:UIControlStateNormal];
-    [self.statusLabel setText:@"Disconnected"];
-    self.periph = nil;
+//-----------------------------------------------------------------------
+- (void)updateStatus;
+{
+    NSString *statusText;
+    NSString *buttonTitle;
+    switch (status) {
+        case STATUS_BT_OFF:
+            statusText = @"BT is off";
+            buttonTitle = OFF_LABEL;
+            self.multiButton.userInteractionEnabled = true;
+            break;
+        case STATUS_DISCONNECTED:
+            statusText = @"Disconnected";
+            buttonTitle = START_TEST_LABEL;
+            self.multiButton.userInteractionEnabled = true;
+            break;
+        case STATUS_SEARCHING:
+            statusText = @"Searching...";
+            buttonTitle = SEARCHING_LABEL;
+            self.multiButton.userInteractionEnabled = false;
+            break;
+        case STATUS_CONNECTED:
+            statusText = [NSString stringWithFormat: @"Connected to %@", self.periph.name];
+            buttonTitle = END_TEST_LABEL;
+            self.multiButton.userInteractionEnabled = true;
+            break;
+//        case STATUS_TESTING:
+//            statusText = @"Testing";
+//            buttonTitle = testing;
+//            break;
+        case STATUS_READING:
+            statusText = @"BT is off";
+            buttonTitle = OFF_LABEL;
+            self.multiButton.userInteractionEnabled = true;
+            break;
+    }
+    self.statusLabel.text = statusText;
+    [self.multiButton setTitle:buttonTitle forState:UIControlStateNormal];
+//    [self.multiButton setNeedsDisplay];
 }
 
 
@@ -189,13 +232,23 @@ bool onlyOurDevice = false;
 {
     NSLog(@"LQR> Did connect peripheral: %@", [peripheral description]);
     self.periph = peripheral;
-    [self connected];
+    self.periph.delegate = self;
+    if (onlyOurDevice) {
+        [self.periph discoverServices:[NSArray arrayWithObject:self.myModel.uuidService]];
+    } else {
+        [self.periph discoverServices:nil];
+    }
+    
+    status = STATUS_CONNECTED;
+    [self updateStatus];
 }
 //-------------------------------------------------------------------------
 -(void)centralManager:(CBCentralManager *)central didDisconnectPeripheral:(CBPeripheral *)peripheral error:(NSError *)error
 {
     NSLog(@"LQR> Did DISconnect peripheral: %@", [peripheral description]);
-    [self disconnected];
+    self.periph = nil;
+    status = STATUS_DISCONNECTED;
+    [self updateStatus];
 }
 //-------------------------------------------------------------------------
 -(void)centralManager:(CBCentralManager *)central didRetrievePeripherals:(NSArray *)peripherals{
@@ -208,7 +261,8 @@ bool onlyOurDevice = false;
     switch (central.state) {
         case CBCentralManagerStatePoweredOff:
             logMessage = @"!> Bluetooth is currently powered off.";
-            [self blueToothOff];
+            status = STATUS_BT_OFF;
+            [self updateStatus];
             break;
         case CBCentralManagerStateResetting:
             logMessage = @"!> Bluetooth is resetting.";
@@ -224,7 +278,8 @@ bool onlyOurDevice = false;
             break;
         case CBCentralManagerStatePoweredOn:
             logMessage = @"Bluetooth is currently powered on!";
-            [self blueToothOn];
+            status = STATUS_DISCONNECTED;
+            [self updateStatus];
             break;
     }
     NSLog(@"%@", logMessage);

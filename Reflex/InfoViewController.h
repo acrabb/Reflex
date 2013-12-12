@@ -10,14 +10,18 @@
 #import "LQRModel.h"
 #import "CorePlot-CocoaTouch.h"
 
-@interface InfoViewController : ViewController <CPTPlotDataSource, CPTAxisDelegate>
+@interface InfoViewController : ViewController <CPTPlotDataSource, CPTAxisDelegate, CPTPlotSpaceDelegate>
 {
-    CPTXYGraph *graph;
-    NSMutableArray *dataForPlot;
+    CPTXYGraph *topGraph;
+    CPTXYGraph *bottomGraph;
+    NSMutableArray *dataForTopPlot;
+    NSMutableArray *dataForBottomPlot;
 }
 @property (weak, nonatomic) IBOutlet UIButton       *backButton;
-@property (readwrite, strong, nonatomic) NSMutableArray *dataForPlot;
-@property (weak, nonatomic) IBOutlet CPTGraphHostingView *graphHostView;
+@property (readwrite, strong, nonatomic) NSMutableArray *dataForTopPlot;
+@property (readwrite, strong, nonatomic) NSMutableArray *dataForBottomPlot;
+@property (weak, nonatomic) IBOutlet CPTGraphHostingView *topGraphHostView;
+@property (weak, nonatomic) IBOutlet CPTGraphHostingView *bottomGraphHostView;
 
 - (IBAction)backButtonTapped:(id)sender;
 

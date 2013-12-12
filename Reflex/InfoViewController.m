@@ -18,10 +18,15 @@ CPTScatterPlot *scatterPlot;
 @implementation InfoViewController
 
 @synthesize backButton  = _backButton;
-@synthesize dataForPlot;
-@synthesize graphHostView = _graphHostView;
+@synthesize dataForTopPlot;
+@synthesize dataForBottomPlot;
+@synthesize topGraphHostView = _topGraphHostView;
 bool debugging = true;
 
+CPTPlot *bottomPlot;
+CPTPlot *topPlot;
+
+int secondsPerDay = 1 * 60 * 60 * 24;
 
 //-----------------------------------------------------------------------
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
@@ -41,111 +46,172 @@ bool debugging = true;
     NSLog(@">> Info view controller loaded.");
     myModel = [LQRModel sharedInstance];
     [self.backButton.layer setCornerRadius:10.0];
-    if (debugging) {
-        int hs = rand();
-        int rl = rand();
-        int rs = rand();
+    if (debugging && !self.myModel.history.count) {
+        int hs;
+        int rl;
+        int rs;
         for (int i = 0; i < 10; i++) {
+            hs = 1.2 * rand() / (float)RAND_MAX * 10;
+            rl = 1.2 * rand() / (float)RAND_MAX * 10;
+            rs = 1.2 * rand() / (float)RAND_MAX * 10;
+            NSLog(@">>> hs: %d,,, rl: %d,,, rs: %d",hs, rl, rs);
             [self.myModel.history setObject:[[DataModel alloc] initWithHammerStrength:hs
                                                                         reflexLatency:rl
                                                                        reflexStrength:rs]
-                                     forKey: [NSDate dateWithTimeIntervalSinceNow: -1 * [self secondsPerDay] * i]];
+                                     forKey: [NSDate dateWithTimeIntervalSinceNow: -1 * secondsPerDay * i]];
         }
+//        NSLog(@"Info> %@", [self.myModel.history description]);
     }
-    [self setUpGraph];
+    NSLog(@"Array>>> %@", [self.myModel.history description]);
+    [self setUpTopGraph];
+    [self setUpBottomGraph];
 }
+
+
+
 //-----------------------------------------------------------------------
--(void)setUpGraph
+-(void)setUpTopGraph
 {
     // Create graph from theme
-    graph = [[CPTXYGraph alloc] initWithFrame:CGRectZero];
-//    CPTTheme *theme = [CPTTheme themeNamed:kCPTDarkGradientTheme];
-//    [graph applyTheme:theme];
-    CPTGraphHostingView *hostingView = self.graphHostView;
+    topGraph = [[CPTXYGraph alloc] initWithFrame:CGRectZero];
+    CPTGraphHostingView *hostingView = self.topGraphHostView;
     hostingView.collapsesLayers = NO; // Setting to YES reduces GPU memory usage, but can slow drawing/scrolling
-    hostingView.hostedGraph     = graph;
+    hostingView.hostedGraph     = topGraph;
     
-    graph.paddingLeft   = 10.0;
-    graph.paddingTop    = 10.0;
-    graph.paddingRight  = 10.0;
-    graph.paddingBottom = 10.0;
+    topGraph.paddingLeft   = 10.0;
+    topGraph.paddingTop    = 5.0;
+    topGraph.paddingRight  = 10.0;
+    topGraph.paddingBottom = 5.0;
     
     // Setup plot space
-    CPTXYPlotSpace *plotSpace = (CPTXYPlotSpace *)graph.defaultPlotSpace;
+    CPTXYPlotSpace *plotSpace = (CPTXYPlotSpace *)topGraph.defaultPlotSpace;
     plotSpace.allowsUserInteraction = YES;
-    plotSpace.xRange                = [CPTPlotRange plotRangeWithLocation:CPTDecimalFromFloat(-0.15) length:CPTDecimalFromFloat(2.0)];
-    plotSpace.yRange                = [CPTPlotRange plotRangeWithLocation:CPTDecimalFromFloat(-0.15) length:CPTDecimalFromFloat(2.0)];
+    plotSpace.xRange                = [CPTPlotRange plotRangeWithLocation:CPTDecimalFromFloat(-secondsPerDay*0.5)
+                                                                   length:CPTDecimalFromInt(secondsPerDay*6.0f)];
+    plotSpace.yRange                = [CPTPlotRange plotRangeWithLocation:CPTDecimalFromFloat(-1.5)
+                                                                   length:CPTDecimalFromFloat(12)];
+    plotSpace.delegate = self;
     
     // Axes
-    CPTXYAxisSet *axisSet = (CPTXYAxisSet *)graph.axisSet;
-    CPTXYAxis *x          = axisSet.xAxis;
-    x.majorIntervalLength         = CPTDecimalFromString(@"0.5");
-    x.orthogonalCoordinateDecimal = CPTDecimalFromString(@"0");
-    x.minorTicksPerInterval       = 2;
-    NSArray *exclusionRanges = [NSArray arrayWithObjects:
-                                [CPTPlotRange plotRangeWithLocation:CPTDecimalFromFloat(1.99) length:CPTDecimalFromFloat(0.02)],
-                                [CPTPlotRange plotRangeWithLocation:CPTDecimalFromFloat(0.99) length:CPTDecimalFromFloat(0.02)],
-                                [CPTPlotRange plotRangeWithLocation:CPTDecimalFromFloat(2.99) length:CPTDecimalFromFloat(0.02)],
-                                nil];
-    x.labelExclusionRanges = exclusionRanges;
+    CPTXYAxisSet *axisSet           = (CPTXYAxisSet *)topGraph.axisSet;
+    CPTXYAxis *x                    = axisSet.xAxis;
+    x.majorIntervalLength           = CPTDecimalFromInt(secondsPerDay);
+    x.orthogonalCoordinateDecimal   = CPTDecimalFromString(@"0");
+    x.minorTicksPerInterval         = 0;
+    NSDateFormatter *dateFormatter  = [[NSDateFormatter alloc] init];
+    dateFormatter.dateStyle         = kCFDateFormatterShortStyle;
+    CPTTimeFormatter *timeFormatter = [[CPTTimeFormatter alloc] initWithDateFormatter:dateFormatter];
+    timeFormatter.referenceDate     = [LQRModel refDate];
+    x.labelFormatter                = timeFormatter;
     
     CPTXYAxis *y = axisSet.yAxis;
-    y.majorIntervalLength         = CPTDecimalFromString(@"0.5");
-    y.minorTicksPerInterval       = 5;
-    y.orthogonalCoordinateDecimal = CPTDecimalFromString(@"0");
-    exclusionRanges               = [NSArray arrayWithObjects:
-                                     [CPTPlotRange plotRangeWithLocation:CPTDecimalFromFloat(1.99) length:CPTDecimalFromFloat(0.02)],
-                                     [CPTPlotRange plotRangeWithLocation:CPTDecimalFromFloat(0.99) length:CPTDecimalFromFloat(0.02)],
-                                     [CPTPlotRange plotRangeWithLocation:CPTDecimalFromFloat(3.99) length:CPTDecimalFromFloat(0.02)],
-                                     nil];
+    y.majorIntervalLength           = CPTDecimalFromString(@"1");
+    y.minorTicksPerInterval         = 0;
+    y.orthogonalCoordinateDecimal   = CPTDecimalFromString(@"0");
+    y.labelFormatter                = [[NSNumberFormatter alloc] init];
+    NSArray *exclusionRanges               = [NSArray arrayWithObjects:
+                                 [CPTPlotRange plotRangeWithLocation:CPTDecimalFromFloat(-0.99) length:CPTDecimalFromFloat(-0.02)],
+                                 nil];
     y.labelExclusionRanges = exclusionRanges;
     y.delegate             = self;
     
+    
     // Create a blue plot area
-    CPTScatterPlot *boundLinePlot  = [[CPTScatterPlot alloc] init];
-    CPTMutableLineStyle *lineStyle = [CPTMutableLineStyle lineStyle];
-    lineStyle.miterLimit        = 1.0f;
-    lineStyle.lineWidth         = 3.0f;
-    lineStyle.lineColor         = [CPTColor whiteColor];
-    boundLinePlot.dataLineStyle = lineStyle;
-    boundLinePlot.identifier    = @"Blue Plot";
-    boundLinePlot.dataSource    = self;
-    [graph addPlot:boundLinePlot];
+    CPTScatterPlot *boundLinePlot   = [[CPTScatterPlot alloc] init];
+    CPTMutableLineStyle *lineStyle  = [CPTMutableLineStyle lineStyle];
+    lineStyle.miterLimit            = 1.0f;
+    lineStyle.lineWidth             = 3.0f;
+    lineStyle.lineColor             = [CPTColor whiteColor];
+    boundLinePlot.dataLineStyle     = lineStyle;
+    boundLinePlot.identifier        = @"Top Line Plot";
+    boundLinePlot.dataSource        = self;
+    topPlot = boundLinePlot;
+    CPTMutableTextStyle *whiteText = [CPTMutableTextStyle textStyle];
+    whiteText.color = [CPTColor whiteColor];
+    topGraph.titleTextStyle = whiteText;
+    [topGraph setTitle:@"Reflex Strength"];
+    [topGraph addPlot:boundLinePlot];
     
+    self.dataForTopPlot = [self.myModel getHistoryAsArrayFor:kLQROptionReflexStrength];
     
-    // Do a blue gradient
-   /*
-    CPTColor *areaColor1       = [CPTColor colorWithComponentRed:0.3 green:0.3 blue:1.0 alpha:0.8];
-    CPTGradient *areaGradient1 = [CPTGradient gradientWithBeginningColor:areaColor1 endingColor:[CPTColor clearColor]];
-    areaGradient1.angle = -90.0f;
-    CPTFill *areaGradientFill = [CPTFill fillWithGradient:areaGradient1];
-    boundLinePlot.areaFill      = areaGradientFill;
-    boundLinePlot.areaBaseValue = [[NSDecimalNumber zero] decimalValue];
-    
-    // Add plot points
-    CPTMutableLineStyle *symbolLineStyle = [CPTMutableLineStyle lineStyle];
-    symbolLineStyle.lineColor = [CPTColor blackColor];
-    CPTPlotSymbol *plotSymbol = [CPTPlotSymbol ellipsePlotSymbol];
-    plotSymbol.fill          = [CPTFill fillWithColor:[CPTColor blueColor]];
-    plotSymbol.lineStyle     = symbolLineStyle;
-    plotSymbol.size          = CGSizeMake(10.0, 10.0);
-    boundLinePlot.plotSymbol = plotSymbol;
-     */
-    
-    // Add some initial data
-    NSMutableArray *contentArray = [NSMutableArray arrayWithCapacity:100];
-    NSUInteger i;
-    for ( i = 0; i < 60; i++ ) {
-        id x = [NSNumber numberWithFloat:i * 0.05];
-        id y = [NSNumber numberWithFloat:1.2 * rand() / (float)RAND_MAX];
-        [contentArray addObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:x, @"x", y, @"y", nil]];
-    }
-    self.dataForPlot = contentArray;
-    
-#ifdef PERFORMANCE_TEST
-    [NSTimer scheduledTimerWithTimeInterval:2.0 target:self selector:@selector(changePlotRange) userInfo:nil repeats:YES];
-#endif
+//#ifdef PERFORMANCE_TEST
+//    [NSTimer scheduledTimerWithTimeInterval:2.0 target:self selector:@selector(changePlotRange) userInfo:nil repeats:YES];
+//#endif
 }
+
+
+
+//-----------------------------------------------------------------------
+-(void)setUpBottomGraph
+{
+    // Create graph from theme
+    bottomGraph = [[CPTXYGraph alloc] initWithFrame:CGRectZero];
+    CPTGraphHostingView *hostingView = self.bottomGraphHostView;
+    hostingView.collapsesLayers = NO; // Setting to YES reduces GPU memory usage, but can slow drawing/scrolling
+    hostingView.hostedGraph     = bottomGraph;
+    
+    bottomGraph.paddingLeft   = 10.0;
+    bottomGraph.paddingTop    = 5.0;
+    bottomGraph.paddingRight  = 10.0;
+    bottomGraph.paddingBottom = 5.0;
+    
+    // Setup plot space
+    CPTXYPlotSpace *plotSpace = (CPTXYPlotSpace *)bottomGraph.defaultPlotSpace;
+    plotSpace.allowsUserInteraction = YES;
+    plotSpace.xRange                = [CPTPlotRange plotRangeWithLocation:CPTDecimalFromFloat(-secondsPerDay*0.5)
+                                                                   length:CPTDecimalFromInt(secondsPerDay*6.0f)];
+    plotSpace.yRange                = [CPTPlotRange plotRangeWithLocation:CPTDecimalFromFloat(-1.5)
+                                                                   length:CPTDecimalFromFloat(12)];
+    plotSpace.delegate = self;
+    
+    // Axes
+    CPTXYAxisSet *axisSet           = (CPTXYAxisSet *)bottomGraph.axisSet;
+    CPTXYAxis *x                    = axisSet.xAxis;
+    x.majorIntervalLength           = CPTDecimalFromInt(secondsPerDay);
+    x.orthogonalCoordinateDecimal   = CPTDecimalFromString(@"0");
+    x.minorTicksPerInterval         = 0;
+    NSDateFormatter *dateFormatter  = [[NSDateFormatter alloc] init];
+    dateFormatter.dateStyle         = kCFDateFormatterShortStyle;
+    CPTTimeFormatter *timeFormatter = [[CPTTimeFormatter alloc] initWithDateFormatter:dateFormatter];
+    timeFormatter.referenceDate     = [LQRModel refDate];
+    x.labelFormatter                = timeFormatter;
+    
+    CPTXYAxis *y = axisSet.yAxis;
+    y.majorIntervalLength           = CPTDecimalFromString(@"1");
+    y.minorTicksPerInterval         = 0;
+    y.orthogonalCoordinateDecimal   = CPTDecimalFromString(@"0");
+    y.labelFormatter                = [[NSNumberFormatter alloc] init];
+    NSArray *exclusionRanges               = [NSArray arrayWithObjects:
+                                 [CPTPlotRange plotRangeWithLocation:CPTDecimalFromFloat(-0.99) length:CPTDecimalFromFloat(-0.02)],
+                                 nil];
+    y.labelExclusionRanges = exclusionRanges;
+    y.delegate             = self;
+    
+    
+    // Create a blue plot area
+    CPTScatterPlot *boundLinePlot   = [[CPTScatterPlot alloc] init];
+    CPTMutableLineStyle *lineStyle  = [CPTMutableLineStyle lineStyle];
+    lineStyle.miterLimit            = 1.0f;
+    lineStyle.lineWidth             = 3.0f;
+    lineStyle.lineColor             = [CPTColor whiteColor];
+    boundLinePlot.dataLineStyle     = lineStyle;
+    boundLinePlot.identifier        = @"Bottom Line Plot";
+    boundLinePlot.dataSource        = self;
+    bottomPlot = boundLinePlot;
+    [bottomGraph addPlot:boundLinePlot];
+    CPTMutableTextStyle *whiteText = [CPTMutableTextStyle textStyle];
+    whiteText.color = [CPTColor whiteColor];
+    bottomGraph.titleTextStyle = whiteText;
+    [bottomGraph setTitle:@"Reflex Latency"];
+    
+    self.dataForBottomPlot = [self.myModel getHistoryAsArrayFor:kLQROptionReflexLatency];
+    
+//#ifdef PERFORMANCE_TEST
+//    [NSTimer scheduledTimerWithTimeInterval:2.0 target:self selector:@selector(changePlotRange) userInfo:nil repeats:YES];
+//#endif
+}
+
+
 
 
 
@@ -153,11 +219,14 @@ bool debugging = true;
 //-----------------------------------------------------------------------
 -(void)changePlotRange
 {
+    NSLog(@"CPT> Changing Plot Range");
     // Setup plot space
-    CPTXYPlotSpace *plotSpace = (CPTXYPlotSpace *)graph.defaultPlotSpace;
+    CPTXYPlotSpace *plotSpace = (CPTXYPlotSpace *)topGraph.defaultPlotSpace;
     
-    plotSpace.xRange = [CPTPlotRange plotRangeWithLocation:CPTDecimalFromFloat(0.0) length:CPTDecimalFromFloat(3.0 + 2.0 * rand() / RAND_MAX)];
-    plotSpace.yRange = [CPTPlotRange plotRangeWithLocation:CPTDecimalFromFloat(0.0) length:CPTDecimalFromFloat(3.0 + 2.0 * rand() / RAND_MAX)];
+    plotSpace.xRange = [CPTPlotRange plotRangeWithLocation:CPTDecimalFromFloat(0.0)
+                                                    length:CPTDecimalFromFloat(3.0 + 2.0 * rand() / RAND_MAX)];
+    plotSpace.yRange = [CPTPlotRange plotRangeWithLocation:CPTDecimalFromFloat(0.0)
+                                                    length:CPTDecimalFromFloat(3.0 + 2.0 * rand() / RAND_MAX)];
 }
 
 #pragma mark -
@@ -165,23 +234,43 @@ bool debugging = true;
 
 -(NSUInteger)numberOfRecordsForPlot:(CPTPlot *)plot
 {
-    return [dataForPlot count];
+    if (plot == topPlot) {
+        return [dataForTopPlot count];
+    } else {
+        return [dataForBottomPlot count];
+    }
 }
-
 
 -(NSNumber *)numberForPlot:(CPTPlot *)plot field:(NSUInteger)fieldEnum recordIndex:(NSUInteger)index
 {
     NSString *key = (fieldEnum == CPTScatterPlotFieldX ? @"x" : @"y");
-    NSNumber *num = [[dataForPlot objectAtIndex:index] valueForKey:key];
-    
-//    // Green plot gets shifted above the blue
-//    if ( [(NSString *)plot.identifier isEqualToString : @"Green Plot"] ) {
-//        if ( fieldEnum == CPTScatterPlotFieldY ) {
-//            num = [NSNumber numberWithDouble:[num doubleValue] + 1.0];
-//        }
-//    }
+    NSNumber *num;
+    if (plot == topPlot) {
+        num = [[dataForTopPlot objectAtIndex:index] valueForKey:key];
+    } else {
+        num = [[dataForBottomPlot objectAtIndex:index] valueForKey:key];
+    }
     return num;
 }
+
+
+#pragma mark -
+#pragma mark Plot Space Delegate Methods
+
+-(CGPoint)plotSpace:(CPTPlotSpace *)space willDisplaceBy:(CGPoint)displacement
+{
+    return CGPointMake(displacement.x, 0);
+}
+
+-(CPTPlotRange *)plotSpace:(CPTPlotSpace *)space willChangePlotRangeTo:(CPTPlotRange *)newRange forCoordinate:(CPTCoordinate)coordinate
+{
+    if (coordinate == CPTCoordinateY) {
+        newRange = ((CPTXYPlotSpace*)space).yRange;
+//        newRange = [[CPTPlotRange alloc] initWithLocation:[[NSNumber 0.0] decimal] length:newRange.length];
+    }
+    return newRange;
+}
+
 
 #pragma mark -
 #pragma mark Axis Delegate Methods
@@ -235,11 +324,6 @@ bool debugging = true;
 
 
 //-----------------------------------------------------------------------
-//-----------------------------------------------------------------------
--(int)secondsPerDay
-{
-    return 1 * 60 * 60 * 24;
-}
 //-----------------------------------------------------------------------
 -(UIStatusBarStyle)preferredStatusBarStyle{
     return UIStatusBarStyleLightContent;

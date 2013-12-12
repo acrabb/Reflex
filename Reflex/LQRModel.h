@@ -9,8 +9,14 @@
 #import <Foundation/Foundation.h>
 #import <CoreBluetooth/CoreBluetooth.h>
 #import "DataModel.h"
+#import "LQRModel.h"
 
 @interface LQRModel : NSObject
+
+extern const int kLQROptionAll;
+extern const int kLQROptionHammerStrength;
+extern const int kLQROptionReflexLatency;
+extern const int kLQROptionReflexStrength;
 
 + (id)sharedInstance;
 
@@ -21,9 +27,11 @@
 @property (strong, nonatomic) NSMutableDictionary *history;
 
 
++(NSDate *)refDate;
+
 - (void) addValueToHistory: (DataModel *)value;
 -(NSArray *)getHistoryValues;
 -(NSArray *)getHistoryKeysSorted;
-
+-(NSMutableArray *)getHistoryAsArrayFor:(int)option;
 
 @end
