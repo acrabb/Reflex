@@ -22,6 +22,10 @@ const int kLQROptionHammerStrength  = 1;
 const int kLQROptionReflexLatency   = 2;
 const int kLQROptionReflexStrength  = 3;
 
+bool debug = true;
+int secondsInDay = 1 * 60 * 60 * 24;
+int offset = 0;
+
 + (id)sharedInstance {
     static LQRModel *sharedInstance = nil;
     static dispatch_once_t onceToken;
@@ -41,6 +45,30 @@ const int kLQROptionReflexStrength  = 3;
         self.uuidCharacteristic = [CBUUID UUIDWithString:@"e14235c1-5d26-11e3-949a-0800200c9a66"];
         
         self.history = [[NSMutableDictionary alloc] init];
+        
+        // MOCK DATA
+        if (debug) {
+            int hs;
+            int rl;
+            int rs;
+            for (int i = 0; i < 10; i++) {
+                hs = (arc4random() % 10) + 1;
+                rl = 40 + (arc4random() % 50) - i;
+                rs = 2 + (arc4random() % 5) + i/2;
+                if (i == 9) {
+                    hs = 7;
+                    rl = 32;
+                    rs = 7;
+                }
+                NSLog(@">>> hs: %d,,, rl: %d,,, rs: %d",hs, rl, rs);
+                NSDate* week = [NSDate dateWithTimeIntervalSinceNow: -1 * secondsInDay * (10-i)];
+                [self.history setObject:[[DataModel alloc] initWithHammerStrength:hs
+                                                                            reflexLatency:rl
+                                                                           reflexStrength:rs]
+                                         forKey: week];
+            }
+        }
+        
     }
     return self;
 }
@@ -48,8 +76,9 @@ const int kLQROptionReflexStrength  = 3;
 
 - (void)addValueToHistory: (DataModel *)value
 {
-    NSDate *now = [NSDate date];
+    NSDate *now = [NSDate dateWithTimeIntervalSinceNow:offset];
     [self.history setObject:value forKey:now];
+    offset += secondsInDay;
 }
 
 

@@ -47,30 +47,7 @@ int secondsPerDay = 1 * 60 * 60 * 24;
     myModel = [LQRModel sharedInstance];
     [self.backButton.layer setCornerRadius:5.0];
     
-    // MOCK DATA
-    if (debugging && !self.myModel.history.count) {
-        int hs;
-        int rl;
-        int rs;
-        for (int i = 0; i < 10; i++) {
-            hs = (arc4random() % 10) + 1;
-            rl = 20 + (arc4random() % 30) - i;
-            rs = 4 + (arc4random() % 5) + i/2;
-            if (i == 9) {
-                hs = 7;
-                rl = 32;
-                rs = 7;
-            }
-
-            NSLog(@">>> hs: %d,,, rl: %d,,, rs: %d",hs, rl, rs);
-            [self.myModel.history setObject:[[DataModel alloc] initWithHammerStrength:hs
-                                                                        reflexLatency:rl
-                                                                       reflexStrength:rs]
-                                     forKey: [NSDate dateWithTimeIntervalSinceNow: -1 * secondsPerDay * (9-i)]];
-        }
-    }
-    
-//    NSLog(@"Array>>> %@", [self.myModel.history description]);
+    NSLog(@"Array>>> %@", [self.myModel.history description]);
     [self setUpTopGraph];
     [self setUpBottomGraph];
 }
@@ -122,7 +99,7 @@ int secondsPerDay = 1 * 60 * 60 * 24;
                                  [CPTPlotRange plotRangeWithLocation:CPTDecimalFromFloat(-0.99) length:CPTDecimalFromFloat(-0.02)],
                                  nil];
     y.labelExclusionRanges  = exclusionRanges;
-    y.axisConstraints       = [CPTConstraints constraintWithLowerOffset:20];
+    y.axisConstraints       = [CPTConstraints constraintWithLowerOffset:25];
     y.delegate              = self;
     
     
@@ -170,8 +147,8 @@ int secondsPerDay = 1 * 60 * 60 * 24;
     plotSpace.allowsUserInteraction = YES;
     plotSpace.xRange                = [CPTPlotRange plotRangeWithLocation:CPTDecimalFromFloat(-secondsPerDay*0.5)
                                                                    length:CPTDecimalFromInt(secondsPerDay*6.0f)];
-    plotSpace.yRange                = [CPTPlotRange plotRangeWithLocation:CPTDecimalFromFloat(-7)
-                                                                   length:CPTDecimalFromFloat(60)];
+    plotSpace.yRange                = [CPTPlotRange plotRangeWithLocation:CPTDecimalFromFloat(-15)
+                                                                   length:CPTDecimalFromFloat(120)];
     plotSpace.delegate = self;
     
     // Axes
@@ -187,17 +164,17 @@ int secondsPerDay = 1 * 60 * 60 * 24;
     x.labelFormatter                = timeFormatter;
     
     CPTXYAxis *y = axisSet.yAxis;
-    y.majorIntervalLength           = CPTDecimalFromString(@"5");
+    y.majorIntervalLength           = CPTDecimalFromString(@"10");
     y.minorTicksPerInterval         = 0;
     y.orthogonalCoordinateDecimal   = CPTDecimalFromString(@"0");
     NSNumberFormatter *numFormatter = [[NSNumberFormatter alloc] init];
     y.labelFormatter                = numFormatter;
     NSArray *exclusionRanges        = [NSArray arrayWithObjects:
-                                 [CPTPlotRange plotRangeWithLocation:CPTDecimalFromFloat(-4.99)
+                                 [CPTPlotRange plotRangeWithLocation:CPTDecimalFromFloat(-9.99)
                                                               length:CPTDecimalFromFloat(-0.02)],
                                  nil];
     y.labelExclusionRanges  = exclusionRanges;
-    y.axisConstraints       = [CPTConstraints constraintWithLowerOffset:20];
+    y.axisConstraints       = [CPTConstraints constraintWithLowerOffset:25];
     y.delegate              = self;
     
     

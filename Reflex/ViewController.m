@@ -26,7 +26,7 @@
 
 NSString *OFF_LABEL         = @"Enable Bluetooth";
 NSString *START_TEST_LABEL  = @"Start Test";
-NSString *END_TEST_LABEL    = @"End Test";
+NSString *END_TEST_LABEL    = @"Cancel Test";
 NSString *READING_DATA      = @"Reading data...";
 NSString *SEARCHING_LABEL   = @"Searching...";
 NSString *CLEARED_LABEL     = @"--";
@@ -138,7 +138,9 @@ NSTimer *connectTimer;
 //-------------------------------------------------------------------------
 - (void)endTest;
 {
-    
+    if (self.periph != nil) {
+        [self.myManager cancelPeripheralConnection:self.periph];
+    }
 }
 
 
@@ -331,22 +333,27 @@ NSTimer *connectTimer;
     NSData * data = characteristic.value;
     NSLog(@"PER> > Updated char value: %@", [characteristic.value description]);
     
-    NSRange range = NSMakeRange (0, 6);
-    unsigned char aBuffer[6];
+    NSRange range = NSMakeRange (0, 3);
+    unsigned char aBuffer[3];
     [data getBytes:aBuffer range:range];
-    int ham1 = aBuffer[0];
-    int ham2 = aBuffer[1];
-    int ham3 = aBuffer[2];
+    int ham1 = aBuffer[0];  //hammer peak
+    int ham2 = aBuffer[1];  // reflex peak
+    int ham3 = aBuffer[2];  // reflex latency
+    
+    if (ham3 < 20) {
+        [self alertWithTitle:@"Please Retry" andMessage:@"Invalid reading. Please re-hammer."];
+        return;
+    }
     
     self.hammerStrengthLabel.text = [NSString stringWithFormat:@"%d", ham1];
-    self.reflexLatLabel.text = [NSString stringWithFormat:@"%d", ham2];
-    self.reflexStrLabel.text = [NSString stringWithFormat:@"%d", ham3];
+    self.reflexStrLabel.text = [NSString stringWithFormat:@"%d", ham2];
+    self.reflexLatLabel.text = [NSString stringWithFormat:@"%d ms", ham3];
 
     
     DataModel *dm = [[DataModel alloc] init];
     dm.hamStrength  = [NSNumber numberWithInt:ham1];
-    dm.refLatency   = [NSNumber numberWithInt:ham2];
-    dm.refStrength  = [NSNumber numberWithInt:ham3];
+    dm.refStrength  = [NSNumber numberWithInt:ham2];
+    dm.refLatency   = [NSNumber numberWithInt:ham3];
     
     [self.myModel addValueToHistory:dm];
     
